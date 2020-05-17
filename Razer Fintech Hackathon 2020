@@ -1,0 +1,142 @@
+echo "# DREAM" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git remote add origin https://github.com/kohkwg/DREAM.git
+git push -u origin master
+from kivy.app import App
+from kivy.lang import Builder
+from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.storage.jsonstore import JsonStore
+from os.path import join
+from kivy.uix.boxlayout import BoxLayout
+from kivy.properties import ObjectProperty
+from kivy.uix.widget import Widget
+from kivy.uix.label import Label
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.textinput import TextInput
+import webbrowser
+
+kv = Builder.load_file("Main.kv")
+
+
+
+
+class Inputscreen(Screen):
+    store = JsonStore('store.json')
+
+    def login(self):
+        username = self.ids.login_username.text
+        sender = self.ids.login_sender.text
+        amount = self.ids.login_amount.text
+        Inputscreen.store.put('credentials', name=username, sender=sender, amount=amount)
+
+    def site(self):
+        print("loading")
+        webbrowser.open("https://light.microsite.perxtech.io/game/3?token=32f304caf6fb461876a6a69c8ac90f4126c58c57047cd4eb33ea9f7ff9d1267a")
+
+
+
+
+class Menuscreen(Screen):
+    try:
+        Inputscreen.store.get('credentials')['name']
+    except KeyError:
+        username = ""
+    else:
+        username = Inputscreen.store.get('credentials')['name']
+    try:
+        Inputscreen.store.get('credentials')['sender']
+    except KeyError:
+        sender = ""
+    else:
+        sender = Inputscreen.store.get('credentials')['sender']
+    try:
+        Inputscreen.store.get('credentials')['amount']
+    except KeyError:
+        amount = ""
+    else:
+        amount = Inputscreen.store.get('credentials')['amount']
+
+
+class SettingsScreen(Screen):
+    pass
+
+
+class Transaction_Secret(Screen):
+    pass
+
+
+sm = ScreenManager()
+sm.add_widget(Inputscreen(name="Input"))
+sm.add_widget(Menuscreen(name='Menu'))
+sm.add_widget(SettingsScreen(name='Settings'))
+sm.add_widget(Transaction_Secret(name='SecretTransaction'))
+
+
+class App(App):
+
+    def build(self):
+        return sm
+
+
+if __name__ == '__main__':
+    App().run()
+    
+''' This is for the Kv file
+<Inputscreen>:
+    GridLayout:
+        cols:1
+        TextInput:
+            id: login_username
+            multiline: False
+        TextInput:
+            id: login_sender
+            multiline: False
+        TextInput:
+            id: login_amount
+            multiline: False
+        Button:
+            text: "Submit"
+            on_press: root.login()
+            on_press: root.manager.current = 'Menu'
+        Button:
+            text: 'Hi! You have paid some of your loans. \nWould you like to play this game to motivate yourself?'
+        Button:
+            text: 'Yes'
+            on_press: root.site()
+            on_press: app.stop()
+        Button:
+            text: "No"
+            on_press: app.stop()
+<Menuscreen>:
+    GridLayout:
+        cols:1
+        Label:
+            text: "Hello {}! {} just sent you SGD{}. Would you like to save some?".format(root.username,root.sender,root.amount)
+        Button:
+            text: 'Yes'
+            on_press: root.manager.current = 'Settings'
+        Button:
+            text: 'No'
+            on_press: app.stop()
+<SettingsScreen>:
+    GridLayout:
+        cols: 1
+        Label:
+            text:"How much would you like to save?"
+        TextInput:
+            multiline: False
+            id: Amount_Input
+            amount:Amount_Input
+        Button:
+            text: "Next"
+            on_press:root.manager.current = 'SecretTransaction' if Amount_Input.text != "" else "Settings"
+        Button:
+            text: " Back "
+            on_press: root.manager.current = "Menu"
+<Transaction_Secret>:
+    BoxLayout:
+        Button:
+            text: "Thank you"
+            on_press: app.stop()'''
